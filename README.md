@@ -35,7 +35,7 @@ Open `http://localhost:4173`.
 ## Before the real launch
 
 1. Remove the preview-only `X-Robots-Tag` header from `vercel.json`, or omit that file on the final host.
-2. Confirm that `https://www.althepainterllc.com/` is the final canonical origin.
+2. Confirm the final production origin before launch.
 3. Confirm the online quote URL.
 4. Recheck the service area, phone, business hours, and all testimonial permissions.
 5. Submit `sitemap.xml` after the production URL is live.

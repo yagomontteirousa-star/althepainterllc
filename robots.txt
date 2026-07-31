@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.althepainterllc.com/sitemap.xml
+Sitemap: https://althepainterllc.vercel.app/sitemap.xml
