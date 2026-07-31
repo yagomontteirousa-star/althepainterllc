@@ -103,6 +103,53 @@
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
+  /* Testimonial marquee -------------------------------------------------- */
+
+  const marquee = document.querySelector("[data-marquee]");
+
+  if (marquee && !reducedMotion.matches) {
+    const track = marquee.querySelector("[data-marquee-track]");
+    const originals = [...track.children];
+
+    if (originals.length) {
+      // A second identical set makes the -50% loop point seamless.
+      originals.forEach((node) => {
+        const copy = node.cloneNode(true);
+        copy.setAttribute("aria-hidden", "true");
+        copy.querySelectorAll("a, button").forEach((control) => {
+          control.tabIndex = -1;
+        });
+        track.append(copy);
+      });
+
+      const PIXELS_PER_SECOND = 46;
+      let lastWidth = 0;
+
+      const setDuration = () => {
+        const half = track.scrollWidth / 2;
+        if (!half || Math.abs(half - lastWidth) < 2) return;
+
+        lastWidth = half;
+        track.style.setProperty(
+          "--marquee-duration",
+          `${Math.round(half / PIXELS_PER_SECOND)}s`
+        );
+      };
+
+      setDuration();
+      marquee.setAttribute("data-ready", "");
+
+      // Fonts land after first paint and change the measured width
+      document.fonts?.ready.then(setDuration);
+
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(setDuration, 250);
+      });
+    }
+  }
+
   /* Estimate form -------------------------------------------------------- */
 
   const form = document.querySelector("[data-estimate-form]");

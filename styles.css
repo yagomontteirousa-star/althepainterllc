@@ -273,6 +273,25 @@ h3 {
   background: var(--steel);
 }
 
+/* Secondary phone CTA — glass pill so it holds its own next to the white one */
+.button-ghost {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 0.5rem 1.5rem rgba(3, 8, 15, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  color: var(--white);
+  backdrop-filter: blur(10px);
+}
+
+.button-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 1rem 2rem rgba(3, 8, 15, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
 .button-brand {
   width: 100%;
   border-color: var(--brand);
@@ -283,30 +302,6 @@ h3 {
 .button-brand:hover {
   background: var(--brand-bright);
   border-color: var(--brand-bright);
-}
-
-.inline-link {
-  position: relative;
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.55rem;
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.inline-link::after {
-  width: 1.75rem;
-  height: 1px;
-  background: currentColor;
-  content: "";
-  transition: width 220ms var(--ease);
-}
-
-.inline-link:hover::after {
-  width: 2.5rem;
 }
 
 /* Definition rails -------------------------------------------------------- */
@@ -347,20 +342,53 @@ h3 {
   right: 0;
   left: 0;
   height: var(--header-height);
-  border-bottom: 1px solid transparent;
-  background: linear-gradient(180deg, rgba(7, 15, 24, 0.66), transparent);
+  /*
+    No border here. `1px solid transparent` on this fixed (composited) layer
+    renders as a faint seam across the hero on fractional-DPR displays.
+    The scrolled hairline is drawn with box-shadow instead.
+  */
+  background: transparent;
   transition:
     background-color 220ms ease,
-    border-color 220ms ease,
     box-shadow 220ms ease;
+}
+
+/*
+  The scrim is taller than the header and fades on an eased ramp. A gradient
+  that stops at the header's own edge leaves a visible step across the hero.
+*/
+.site-header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 220%;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 15, 24, 0.62) 0%,
+    rgba(7, 15, 24, 0.5) 22%,
+    rgba(7, 15, 24, 0.34) 42%,
+    rgba(7, 15, 24, 0.18) 60%,
+    rgba(7, 15, 24, 0.07) 78%,
+    rgba(7, 15, 24, 0) 100%
+  );
+  content: "";
+  pointer-events: none;
+  transition: opacity 260ms ease;
 }
 
 .site-header.is-scrolled,
 .site-header.is-menu-open {
-  border-color: var(--line);
   background: rgba(12, 23, 36, 0.82);
-  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 1px 0 var(--line),
+    0 1rem 2rem rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(16px);
+}
+
+/* The solid bar takes over — the scrim would only muddy it */
+.site-header.is-scrolled::before,
+.site-header.is-menu-open::before {
+  opacity: 0;
 }
 
 .site-header.is-menu-open {
@@ -617,6 +645,15 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
+  /* Grounding shadow + rim light: flat images read as stickers without it */
+  box-shadow:
+    0 1.25rem 2.5rem rgba(3, 8, 15, 0.45),
+    0 0.35rem 0.85rem rgba(3, 8, 15, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition:
+    border-color 420ms ease,
+    box-shadow 420ms ease,
+    transform 420ms var(--ease);
 }
 
 .project-media picture,
@@ -627,11 +664,29 @@ h3 {
 
 .project-media img {
   object-fit: cover;
-  transition: transform 700ms var(--ease);
+  transition: transform 800ms var(--ease);
 }
 
+.project:hover .project-media {
+  border-color: var(--line-strong);
+  box-shadow:
+    0 2rem 3.75rem rgba(3, 8, 15, 0.58),
+    0 0.5rem 1.25rem rgba(3, 8, 15, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-6px);
+}
+
+/* overflow:hidden on the box keeps the zoom from breaking the grid */
 .project:hover .project-media img {
-  transform: scale(1.04);
+  transform: scale(1.07);
+}
+
+.project-caption {
+  transition: transform 420ms var(--ease);
+}
+
+.project:hover .project-caption {
+  transform: translateY(-3px);
 }
 
 .project-cabinet .project-media img {
@@ -697,16 +752,21 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    transform 220ms var(--ease);
+    background-color 320ms ease,
+    border-color 320ms ease,
+    box-shadow 320ms ease,
+    transform 320ms var(--ease);
 }
 
 .project-journal:hover {
   border-color: var(--line-strong);
   background: var(--surface-strong);
-  transform: translateY(-3px);
+  box-shadow:
+    0 1.5rem 2.75rem rgba(3, 8, 15, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: translateY(-4px);
 }
 
 .journal-label {
@@ -751,16 +811,46 @@ h3 {
 }
 
 .about-media {
+  position: relative;
   max-width: 24rem;
   margin: 0;
 }
 
+/* Soft brand-blue bloom behind the portrait for depth on the flat panel */
+.about-media::before {
+  position: absolute;
+  z-index: 0;
+  inset: 12% -4% 6%;
+  border-radius: var(--radius-l);
+  background: radial-gradient(
+    62% 58% at 50% 62%,
+    rgba(47, 91, 196, 0.42),
+    transparent 72%
+  );
+  content: "";
+  filter: blur(30px);
+  pointer-events: none;
+}
+
 .about-media picture {
+  position: relative;
+  z-index: 1;
   display: block;
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-l);
-  box-shadow: var(--shadow-dark);
+  box-shadow:
+    0 2rem 3.5rem rgba(3, 8, 15, 0.55),
+    0 0.5rem 1.25rem rgba(3, 8, 15, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: box-shadow 460ms ease;
+}
+
+.about-media:hover picture {
+  box-shadow:
+    0 2.75rem 4.5rem rgba(3, 8, 15, 0.62),
+    0 0.75rem 1.5rem rgba(3, 8, 15, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .about-media img {
@@ -768,6 +858,16 @@ h3 {
   aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: center 34%;
+  transition: transform 800ms var(--ease);
+}
+
+.about-media:hover img {
+  transform: scale(1.05);
+}
+
+.about-media figcaption {
+  position: relative;
+  z-index: 1;
 }
 
 .about-media figcaption {
@@ -831,10 +931,59 @@ h3 {
   color: rgba(12, 23, 36, 0.66);
 }
 
-.review-field {
-  display: grid;
-  align-items: start;
-  gap: clamp(1.5rem, 2.6vw, 2.25rem);
+/*
+  Full-bleed marquee. Without JS it degrades to a swipeable row; the script
+  clones the set and flips [data-ready] on, which starts the loop.
+*/
+.review-marquee {
+  --marquee-gap: clamp(1rem, 2vw, 1.5rem);
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Cards fade out at the edges instead of being sliced by a hard clip */
+  mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.review-marquee::-webkit-scrollbar {
+  display: none;
+}
+
+.review-marquee[data-ready] {
+  overflow-x: hidden;
+}
+
+.review-track {
+  display: flex;
+  width: max-content;
+  padding-block: 1.25rem 1.75rem;
+  align-items: stretch;
+}
+
+.review-marquee[data-ready] .review-track {
+  animation: review-marquee var(--marquee-duration, 60s) linear infinite;
+}
+
+/* margin-right, not gap — the -50% loop point must land exactly on the copy */
+.review-track > .review-bubble {
+  width: clamp(16.5rem, 76vw, 21rem);
+  margin: 0 var(--marquee-gap) 0 0;
+  flex: none;
+}
+
+@keyframes review-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.review-marquee:hover .review-track,
+.review-marquee:focus-within .review-track {
+  animation-play-state: paused;
 }
 
 .review-bubble {
@@ -869,10 +1018,11 @@ h3 {
 }
 
 .review-bubble:hover {
+  border-color: rgba(12, 23, 36, 0.14);
   box-shadow:
-    0 2rem 3.25rem rgba(12, 23, 36, 0.14),
-    0 0.5rem 1rem rgba(12, 23, 36, 0.07);
-  transform: translateY(-4px);
+    0 2.25rem 3.5rem rgba(12, 23, 36, 0.18),
+    0 0.6rem 1.15rem rgba(12, 23, 36, 0.09);
+  transform: translateY(-6px);
 }
 
 .review-bubble blockquote {
@@ -922,27 +1072,45 @@ h3 {
   color: rgba(255, 255, 255, 0.78);
 }
 
+/*
+  Sits on the blue panel, so depth comes from a light rim and a white glow
+  rather than a dark shadow, which would disappear into the background.
+*/
 .phone-link {
   position: relative;
   display: grid;
   margin-top: 2rem;
-  padding: 1.15rem 1.35rem;
+  padding: 1.3rem 1.5rem;
   align-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  box-shadow:
+    0 1rem 2.25rem rgba(2, 8, 26, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition:
-    background-color 200ms ease,
-    border-color 200ms ease;
+    background-color 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    transform 260ms var(--ease);
 }
 
 .phone-link:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 1.5rem 3rem rgba(2, 8, 26, 0.5),
+    0 0 2.5rem rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-3px);
 }
 
 .phone-link small {
-  color: rgba(255, 255, 255, 0.66);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.61rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -1235,9 +1403,6 @@ h3 {
     max-width: 22rem;
   }
 
-  .review-field {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 /* ==========================================================================
@@ -1331,16 +1496,39 @@ h3 {
     transform-origin: left;
   }
 
+  /* Reads as a button, not a caption — this is the primary contact route */
   .header-call {
     display: inline-flex;
     min-height: 2.75rem;
+    padding: 0.55rem 1.15rem;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.6rem;
     justify-self: end;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 0.5rem 1.25rem rgba(3, 8, 15, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
     color: var(--white);
-    font-size: 0.67rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
+    backdrop-filter: blur(10px);
+    transition:
+      background-color 240ms ease,
+      border-color 240ms ease,
+      box-shadow 240ms ease,
+      transform 240ms var(--ease);
+  }
+
+  .header-call:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 0.85rem 1.75rem rgba(3, 8, 15, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    transform: translateY(-2px);
   }
 
   .header-call svg {
@@ -1415,19 +1603,6 @@ h3 {
     grid-column: auto;
   }
 
-  .review-field {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* Subtle float: staggered without breaking the column alignment */
-  .review-bubble:nth-child(3n + 2) {
-    margin-top: 2rem;
-  }
-
-  .review-bubble:nth-child(3n + 3) {
-    margin-top: 1rem;
-  }
-
   .estimate-layout {
     grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.8fr);
     gap: clamp(4rem, 7vw, 7rem);
@@ -1482,5 +1657,14 @@ h3 {
   .js .reveal {
     opacity: 1;
     transform: none;
+  }
+
+  /* Swipeable row instead of a loop the global rule would snap to its end */
+  .review-marquee[data-ready] {
+    overflow-x: auto;
+  }
+
+  .review-track {
+    animation: none !important;
   }
 }
