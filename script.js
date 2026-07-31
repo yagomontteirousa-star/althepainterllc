@@ -103,25 +103,6 @@
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
-  /* Instagram embed fallback ---------------------------------------------- */
-
-  const videoFrame = document.querySelector("[data-video-frame]");
-  const videoFallback = document.querySelector("[data-video-fallback]");
-
-  if (videoFrame && videoFallback) {
-    // Meta's public embed.js often returns an empty, zero-height iframe for
-    // domains it hasn't approved. Give it a few seconds, then check whether
-    // anything actually rendered before trusting it over the fallback link.
-    window.setTimeout(() => {
-      const iframe = videoFrame.querySelector("iframe");
-
-      if (iframe && iframe.offsetHeight > 40) return;
-
-      videoFrame.hidden = true;
-      videoFallback.hidden = false;
-    }, 4000);
-  }
-
   /* Testimonial marquee -------------------------------------------------- */
 
   const marquee = document.querySelector("[data-marquee]");
