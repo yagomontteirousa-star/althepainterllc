@@ -47,6 +47,15 @@
   if (reducedMotion.matches || !("IntersectionObserver" in window)) {
     revealItems.forEach((item) => item.classList.add("is-visible"));
   } else {
+    // Anything already on screen is shown straight away. The observer can be
+    // delayed (or never fire, e.g. in a backgrounded tab), and the hero must
+    // never be left sitting at opacity 0.
+    revealItems.forEach((item) => {
+      if (item.getBoundingClientRect().top < window.innerHeight) {
+        item.classList.add("is-visible");
+      }
+    });
+
     const revealObserver = new IntersectionObserver(
       (entries, observer) => {
         entries.forEach((entry) => {
@@ -58,7 +67,9 @@
       { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
     );
 
-    revealItems.forEach((item) => revealObserver.observe(item));
+    revealItems.forEach((item) => {
+      if (!item.classList.contains("is-visible")) revealObserver.observe(item);
+    });
   }
 
   const sections = [...document.querySelectorAll("main section[id]")];
@@ -92,133 +103,111 @@
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
-  const setupCarousel = (carousel) => {
-    const track = carousel.querySelector("[data-carousel-track]");
-    const slides = [...carousel.querySelectorAll(".testimonial")];
-    const previous = carousel.querySelector("[data-carousel-prev]");
-    const next = carousel.querySelector("[data-carousel-next]");
-    const pause = carousel.querySelector("[data-carousel-pause]");
-    const current = carousel.querySelector("[data-carousel-current]");
+  /* Estimate form -------------------------------------------------------- */
 
-    if (!track || slides.length < 2) return;
+  const form = document.querySelector("[data-estimate-form]");
 
-    let index = 0;
-    let timer = null;
-    let userPaused = reducedMotion.matches;
-    let interactionPaused = false;
-    let pointerStart = null;
+  if (form) {
+    const status = form.querySelector("[data-form-status]");
+    const submit = form.querySelector("button[type='submit']");
+    const looksLikeContact = (value) =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) ||
+      value.replace(/\D/g, "").length >= 10;
 
-    const isPaused = () =>
-      userPaused || interactionPaused || document.visibilityState !== "visible";
+    const setFieldError = (field, message) => {
+      field.classList.toggle("has-error", Boolean(message));
+      let note = field.querySelector(".field-error");
 
-    const syncPauseButton = () => {
-      if (!pause) return;
-      pause.setAttribute("aria-pressed", String(userPaused));
-      pause.setAttribute(
-        "aria-label",
-        userPaused
-          ? "Resume automatic testimonial rotation"
-          : "Pause automatic testimonial rotation"
-      );
+      if (!message) {
+        note?.remove();
+        field.querySelector("input, select, textarea")?.removeAttribute("aria-invalid");
+        return;
+      }
 
-      const label = pause.querySelector("span");
-      if (label) label.textContent = userPaused ? "Play" : "Pause";
+      if (!note) {
+        note = document.createElement("span");
+        note.className = "field-error";
+        field.append(note);
+      }
+
+      note.textContent = message;
+      field.querySelector("input, select, textarea")?.setAttribute("aria-invalid", "true");
     };
 
-    const schedule = () => {
-      window.clearTimeout(timer);
-      timer = null;
+    const validate = () => {
+      const problems = [];
+      const name = form.elements.name;
+      const contact = form.elements.contact;
+      const projectType = form.elements.projectType;
 
-      if (isPaused()) return;
+      const checks = [
+        [name, name.value.trim().length >= 2, "Please add your name."],
+        [
+          contact,
+          looksLikeContact(contact.value.trim()),
+          "Add a phone number or an email address."
+        ],
+        [projectType, Boolean(projectType.value), "Choose a project type."]
+      ];
 
-      timer = window.setTimeout(() => {
-        goTo(index + 1);
-      }, 6500);
-    };
-
-    const render = () => {
-      track.style.transform = `translate3d(${-index * 100}%, 0, 0)`;
-      if (current) current.textContent = String(index + 1).padStart(2, "0");
-
-      slides.forEach((slide, slideIndex) => {
-        const active = slideIndex === index;
-        slide.setAttribute("aria-hidden", String(!active));
-
-        slide.querySelectorAll("a, button").forEach((control) => {
-          control.tabIndex = active ? 0 : -1;
-        });
+      checks.forEach(([element, valid, message]) => {
+        const field = element.closest(".field");
+        setFieldError(field, valid ? "" : message);
+        if (!valid) problems.push(element);
       });
 
-      schedule();
+      return problems;
     };
 
-    const goTo = (nextIndex) => {
-      index = (nextIndex + slides.length) % slides.length;
-      render();
-    };
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-    previous?.addEventListener("click", () => goTo(index - 1));
-    next?.addEventListener("click", () => goTo(index + 1));
+      const problems = validate();
 
-    pause?.addEventListener("click", () => {
-      userPaused = !userPaused;
-      syncPauseButton();
-      schedule();
+      if (problems.length) {
+        status.textContent = "";
+        problems[0].focus();
+        return;
+      }
+
+      const endpoint = form.dataset.endpoint;
+      const firstName = form.elements.name.value.trim().split(/\s+/)[0];
+
+      if (!endpoint) {
+        // No backend connected yet — confirm locally and point to the phone.
+        status.textContent = `Thanks, ${firstName}. Online sending isn’t connected yet — please call (978) 562-6410 and we’ll pick it up right away.`;
+        return;
+      }
+
+      submit.disabled = true;
+      status.textContent = "Sending…";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(form)
+        });
+
+        if (!response.ok) throw new Error(String(response.status));
+
+        form.reset();
+        status.textContent = `Thanks, ${firstName}. Your request is in — Al usually replies within one business day.`;
+      } catch {
+        status.textContent =
+          "Something went wrong sending the form. Please call (978) 562-6410 instead.";
+      } finally {
+        submit.disabled = false;
+      }
     });
 
-    carousel.addEventListener("mouseenter", () => {
-      interactionPaused = true;
-      schedule();
+    form.querySelectorAll("input, select, textarea").forEach((element) => {
+      element.addEventListener("input", () => {
+        const field = element.closest(".field");
+        if (field?.classList.contains("has-error")) setFieldError(field, "");
+      });
     });
-
-    carousel.addEventListener("mouseleave", () => {
-      interactionPaused = false;
-      schedule();
-    });
-
-    carousel.addEventListener("focusin", () => {
-      interactionPaused = true;
-      schedule();
-    });
-
-    carousel.addEventListener("focusout", (event) => {
-      if (carousel.contains(event.relatedTarget)) return;
-      interactionPaused = false;
-      schedule();
-    });
-
-    carousel.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "mouse") return;
-      pointerStart = { x: event.clientX, y: event.clientY };
-    });
-
-    carousel.addEventListener("pointerup", (event) => {
-      if (!pointerStart) return;
-
-      const deltaX = event.clientX - pointerStart.x;
-      const deltaY = event.clientY - pointerStart.y;
-      pointerStart = null;
-
-      if (Math.abs(deltaX) < 42 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-      goTo(index + (deltaX < 0 ? 1 : -1));
-    });
-
-    carousel.addEventListener("pointercancel", () => {
-      pointerStart = null;
-    });
-
-    document.addEventListener("visibilitychange", schedule);
-    reducedMotion.addEventListener?.("change", (event) => {
-      if (event.matches) userPaused = true;
-      syncPauseButton();
-      schedule();
-    });
-
-    syncPauseButton();
-    render();
-  };
-
-  document.querySelectorAll("[data-carousel]").forEach(setupCarousel);
+  }
 
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = new Date().getFullYear();
