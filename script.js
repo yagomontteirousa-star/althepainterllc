@@ -103,6 +103,25 @@
     sections.forEach((section) => sectionObserver.observe(section));
   }
 
+  /* Instagram embed fallback ---------------------------------------------- */
+
+  const videoFrame = document.querySelector("[data-video-frame]");
+  const videoFallback = document.querySelector("[data-video-fallback]");
+
+  if (videoFrame && videoFallback) {
+    // Meta's public embed.js often returns an empty, zero-height iframe for
+    // domains it hasn't approved. Give it a few seconds, then check whether
+    // anything actually rendered before trusting it over the fallback link.
+    window.setTimeout(() => {
+      const iframe = videoFrame.querySelector("iframe");
+
+      if (iframe && iframe.offsetHeight > 40) return;
+
+      videoFrame.hidden = true;
+      videoFallback.hidden = false;
+    }, 4000);
+  }
+
   /* Testimonial marquee -------------------------------------------------- */
 
   const marquee = document.querySelector("[data-marquee]");
@@ -222,7 +241,7 @@
 
       if (!endpoint) {
         // No backend connected yet — confirm locally and point to the phone.
-        status.textContent = `Thanks, ${firstName}. Online sending isn’t connected yet — please call (978) 562-6410 and we’ll pick it up right away.`;
+        status.textContent = `Thanks, ${firstName}. Online sending isn’t connected yet — please call (978) 562-6410 and Al will pick up right away.`;
         return;
       }
 

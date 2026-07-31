@@ -6,7 +6,7 @@ Static, mobile-first marketing site prepared for GitHub and Vercel preview.
 
 - `index.html` — the complete five-block landing page
 - `styles.css` — visual system and responsive layout
-- `script.js` — menu, scroll reveals, active navigation, and accessible review carousel
+- `script.js` — menu, scroll reveals, active navigation, the estimate form, and the auto-scrolling testimonial marquee
 - `assets/images` — optimized WebP photography and social preview image
 - `assets/logo` — faithful transparent logo exports derived from the supplied artwork
 - `assets/originals` — untouched supplied source assets

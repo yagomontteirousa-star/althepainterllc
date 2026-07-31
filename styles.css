@@ -553,10 +553,15 @@ h3 {
   height: 100%;
 }
 
+/*
+  Mobile: the tall narrow crop shows the photo's full height by default,
+  leaving Al small between ceiling and floor. Zooming in and pushing the
+  focal point up crops that headroom out so he reads at a larger scale.
+*/
 .hero-picture img {
   object-fit: cover;
-  object-position: 62% center;
-  scale: 1.015;
+  object-position: 68% 10%;
+  scale: 1.28;
 }
 
 .hero-overlay {
@@ -676,6 +681,18 @@ h3 {
   transform: translateY(-6px);
 }
 
+/* Dashed rim marks this box as awaiting real photography */
+.project-media:has(.project-placeholder) {
+  border-style: dashed;
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.project:hover .project-media:has(.project-placeholder) {
+  border-color: var(--steel-dark);
+  box-shadow: none;
+}
+
 /* overflow:hidden on the box keeps the zoom from breaking the grid */
 .project:hover .project-media img {
   transform: scale(1.07);
@@ -691,6 +708,55 @@ h3 {
 
 .project-cabinet .project-media img {
   filter: grayscale(1) contrast(0.96);
+}
+
+/*
+  Content placeholder for a project photo not yet supplied. Reads as an
+  intentional "pending" state for whoever maintains the site, not a broken
+  image — swap this block for a <picture> once the real photo is in hand.
+*/
+.project-placeholder {
+  display: flex;
+  height: 100%;
+  padding: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: center;
+  background: repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.025) 0 1px,
+      transparent 1px 12px
+    ),
+    var(--panel);
+}
+
+.project-placeholder svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 0.2rem;
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.project-placeholder span {
+  color: var(--steel);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.project-placeholder p {
+  max-width: 18ch;
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 /* Typographic tile — the intentional light break inside the dark grid */
@@ -742,34 +808,39 @@ h3 {
   line-height: 1.6;
 }
 
-.project-journal {
+/*
+  The reel now plays in place via Instagram's own embed widget — no more
+  card that just links out. Their widget keeps its own white chrome (that's
+  the embed contract), so the surrounding frame is what carries our design
+  system: dark card, rounded corners, the same grounding shadow as photos.
+*/
+.project-video {
   display: flex;
   margin-top: clamp(1.75rem, 3vw, 2.25rem);
-  padding: 1.5rem clamp(1.5rem, 3vw, 2rem);
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  gap: 0.35rem 1.5rem;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.project-video-frame {
+  width: 100%;
+  max-width: 26rem;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition:
-    background-color 320ms ease,
-    border-color 320ms ease,
-    box-shadow 320ms ease,
-    transform 320ms var(--ease);
-}
-
-.project-journal:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-strong);
+  background: var(--panel);
   box-shadow:
-    0 1.5rem 2.75rem rgba(3, 8, 15, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  transform: translateY(-4px);
+    0 1.25rem 2.5rem rgba(3, 8, 15, 0.45),
+    0 0.35rem 0.85rem rgba(3, 8, 15, 0.28);
 }
 
-.journal-label {
+.project-video-frame iframe {
+  display: block;
+  width: 100% !important;
+}
+
+.video-label {
   color: var(--steel);
   font-size: 0.63rem;
   font-weight: 700;
@@ -777,23 +848,59 @@ h3 {
   text-transform: uppercase;
 }
 
-.project-journal strong {
+/* Shown only if script.js detects the Instagram embed came back empty */
+.project-video-fallback[hidden] {
+  display: none;
+}
+
+.project-video-fallback {
+  display: inline-flex;
+  width: 100%;
+  max-width: 26rem;
+  padding: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition:
+    background-color 260ms ease,
+    border-color 260ms ease,
+    transform 260ms var(--ease);
+}
+
+.project-video-fallback:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-strong);
+  transform: translateY(-3px);
+}
+
+.project-video-fallback svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+
+.project-video-fallback svg path {
+  fill: currentColor;
+  stroke: none;
+}
+
+.project-video-caption strong {
+  display: block;
+  margin-top: 0.35rem;
   color: var(--white);
   font-family: var(--display);
   font-size: clamp(1.4rem, 4vw, 1.85rem);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.15;
-}
-
-.journal-arrow {
-  margin-left: auto;
-  font-size: 1.2rem;
-  transition: transform 220ms var(--ease);
-}
-
-.project-journal:hover .journal-arrow {
-  transform: translate(0.2rem, -0.2rem);
 }
 
 /* About ------------------------------------------------------------------- */
@@ -816,19 +923,19 @@ h3 {
   margin: 0;
 }
 
-/* Soft brand-blue bloom behind the portrait for depth on the flat panel */
+/* Soft white bloom behind the portrait for depth on the flat panel */
 .about-media::before {
   position: absolute;
   z-index: 0;
-  inset: 12% -4% 6%;
+  inset: 8% -7% 3%;
   border-radius: var(--radius-l);
   background: radial-gradient(
-    62% 58% at 50% 62%,
-    rgba(47, 91, 196, 0.42),
-    transparent 72%
+    64% 60% at 50% 58%,
+    rgba(255, 255, 255, 0.55),
+    transparent 74%
   );
   content: "";
-  filter: blur(30px);
+  filter: blur(26px);
   pointer-events: none;
 }
 
@@ -931,6 +1038,57 @@ h3 {
   color: rgba(12, 23, 36, 0.66);
 }
 
+.google-g {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+}
+
+/* The verified rating pulled from the business's Google listing */
+.google-rating {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.15rem 0.6rem 0.7rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(12, 23, 36, 0.1);
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: var(--shadow-light);
+  color: var(--ink);
+  transition:
+    box-shadow 260ms ease,
+    transform 260ms var(--ease),
+    border-color 260ms ease;
+}
+
+.google-rating:hover {
+  border-color: rgba(12, 23, 36, 0.16);
+  box-shadow:
+    0 1.5rem 2.5rem rgba(12, 23, 36, 0.16),
+    0 0.4rem 0.85rem rgba(12, 23, 36, 0.08);
+  transform: translateY(-3px);
+}
+
+.google-rating-score {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.google-rating-stars {
+  color: #f4a20a;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.google-rating-count {
+  padding-left: 0.3rem;
+  border-left: 1px solid rgba(12, 23, 36, 0.14);
+  color: rgba(12, 23, 36, 0.6);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 /*
   Full-bleed marquee. Without JS it degrades to a swipeable row; the script
   clones the set and flips [data-ready] on, which starts the loop.
@@ -1023,6 +1181,36 @@ h3 {
     0 2.25rem 3.5rem rgba(12, 23, 36, 0.18),
     0 0.6rem 1.15rem rgba(12, 23, 36, 0.09);
   transform: translateY(-6px);
+}
+
+/* Attribution chip — links straight to the listing this quote came from */
+.review-google-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: -0.5rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(12, 23, 36, 0.045);
+  color: rgba(12, 23, 36, 0.56);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.review-google-badge .google-g {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.review-google-badge:hover {
+  background: rgba(12, 23, 36, 0.09);
+  color: var(--ink);
 }
 
 .review-bubble blockquote {
@@ -1326,13 +1514,40 @@ h3 {
   color: var(--white);
 }
 
-.footer-inner > small {
+.footer-bottom {
+  display: flex;
   padding-top: 1.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem 1.5rem;
   border-top: 1px solid var(--line);
+}
+
+.footer-bottom small {
   color: rgba(255, 255, 255, 0.45);
   font-size: 0.62rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Sibling-site convention: credit line stays text, not a hyperlink */
+.footer-credit {
+  display: flex;
+  margin: 0;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.footer-credit img {
+  height: 0.72rem;
+  width: auto;
+  opacity: 0.82;
 }
 
 /* Motion ------------------------------------------------------------------ */
@@ -1549,8 +1764,10 @@ h3 {
     min-height: clamp(40rem, 84svh, 50rem);
   }
 
+  /* Restore the original wide, painterly crop once there's room for it */
   .hero-picture img {
     object-position: center;
+    scale: 1.015;
   }
 
   .hero-overlay {
@@ -1621,7 +1838,7 @@ h3 {
     justify-content: flex-end;
   }
 
-  .footer-inner > small {
+  .footer-bottom {
     grid-column: 2 / 4;
   }
 }
