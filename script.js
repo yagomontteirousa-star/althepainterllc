@@ -136,6 +136,31 @@
         );
       };
 
+      // Touch has no hover, so a tap would do nothing. Hold while pressed,
+      // then keep it still for a beat after release so the card stays
+      // readable instead of sliding away under the finger.
+      let tapResumeTimer = null;
+
+      const releaseTapPause = () => {
+        window.clearTimeout(tapResumeTimer);
+        tapResumeTimer = window.setTimeout(() => {
+          marquee.removeAttribute("data-tap-paused");
+        }, 1000);
+      };
+
+      marquee.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse") return;
+        window.clearTimeout(tapResumeTimer);
+        marquee.setAttribute("data-tap-paused", "");
+      });
+
+      marquee.addEventListener("pointerup", (event) => {
+        if (event.pointerType === "mouse") return;
+        releaseTapPause();
+      });
+
+      marquee.addEventListener("pointercancel", releaseTapPause);
+
       setDuration();
       marquee.setAttribute("data-ready", "");
 

@@ -1024,8 +1024,19 @@ h3 {
   }
 }
 
-.review-marquee:hover .review-track,
-.review-marquee:focus-within .review-track {
+/*
+  Hover pause is gated behind (hover: hover) — on touch browsers :hover
+  latches after a tap and would freeze the marquee indefinitely instead
+  of the brief pause [data-tap-paused] gives it.
+*/
+@media (hover: hover) {
+  .review-marquee:hover .review-track {
+    animation-play-state: paused;
+  }
+}
+
+.review-marquee:focus-within .review-track,
+.review-marquee[data-tap-paused] .review-track {
   animation-play-state: paused;
 }
 
@@ -1098,8 +1109,19 @@ h3 {
   color: var(--ink);
 }
 
+/*
+  Reviews carry Google's full, unedited text. The longest runs ~740
+  characters, which would make every card taller than a phone screen
+  (cards share a height), so the visible copy is clamped and the rest
+  stays in the DOM — the Google badge links out to read it in full.
+*/
 .review-bubble blockquote {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  line-clamp: 8;
   color: rgba(12, 23, 36, 0.82);
   font-size: 0.92rem;
   line-height: 1.65;
@@ -1197,6 +1219,14 @@ h3 {
 .review-meta span {
   color: rgba(12, 23, 36, 0.58);
   font-size: 0.74rem;
+}
+
+/* .review-meta span out-specifies a bare .review-stars — keep both classes */
+.review-meta .review-stars {
+  color: #f4a20a;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
 }
 
 /* Estimate ---------------------------------------------------------------- */
